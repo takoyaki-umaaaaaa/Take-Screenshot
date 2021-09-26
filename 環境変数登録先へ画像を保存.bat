@@ -1,6 +1,5 @@
 @echo off
 pushd %~dp0
-mshta vbscript:execute("MsgBox ""‚¢‚¦[‚¢‚­‚ñ‚·‚Æ`‚İ‚Ä‚é‚£`‚—hh , 323:close")
 
 if not defined TakeScreenshot_SaveToFolder (
 	echo ŠÂ‹«•Ï” TakeScreenshot_SaveToFolder ‚ªŒ©‚Â‚©‚ç‚È‚¢

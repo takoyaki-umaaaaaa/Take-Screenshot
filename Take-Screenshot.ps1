@@ -16,11 +16,8 @@ if( [string]::IsNullOrEmpty($outputDirectory) ){
 New-Variable  -Name SCRIPT_NAME		-Value "Take-Screenshot"	-Option Constant  -Scope Script
 New-Variable  -Name SCRIPT_VERSION	-Value 0.8.0				-Option Constant  -Scope Script
 
-
 # Script title èoóÕ
-Write-Host "`n$SCRIPT_NAME    version $SCRIPT_VERSION`n"
-
-
+Write-Host -ForegroundColor Yellow "`n---- $SCRIPT_NAME   version $SCRIPT_VERSION ----"
 
 
 
@@ -136,3 +133,5 @@ function Take-Screenshot(
 
 
 Take-Screenshot $targetDisplayNumber $outputDirectory $outputFileName
+
+exit 0

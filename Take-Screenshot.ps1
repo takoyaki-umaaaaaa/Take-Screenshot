@@ -1,3 +1,25 @@
+param(
+		[Parameter( ValueFromPipeline = $true )]
+		[int]$targetDisplayNumber = 0,
+
+		[Parameter()][AllowEmptyString()]
+		[string]$outputDirectory,
+
+		[Parameter()][AllowEmptyString()]
+		[string]$outputFileName
+)
+if( [string]::IsNullOrEmpty($outputDirectory) ){
+	$outputDirectory = $PSScriptRoot
+}
+
+# Scriptそのものに対する定数定義
+New-Variable  -Name SCRIPT_NAME		-Value "Take-Screenshot"	-Option Constant  -Scope Script
+New-Variable  -Name SCRIPT_VERSION	-Value 0.8.0				-Option Constant  -Scope Script
+
+
+# Script title 出力
+Write-Host "`n$SCRIPT_NAME    version $SCRIPT_VERSION`n"
+
 
 
 
@@ -5,13 +27,30 @@
 enum ScreenshotTarget {
 	Primary		= 0
 	Secondary	= 1
-	# 3画面目以降は非サポート
+	# 2画面までサポート
 }
 
 
-function Take-Screenshot( [ScreenshotTarget]$targetDisplay = ([ScreenshotTarget]::Primary), [string]$destPath = $PSScriptRoot )
+function Take-Screenshot(
+							[ScreenshotTarget]$targetDisplay = ([ScreenshotTarget]::Primary),
+							[string]$destPath = $PSScriptRoot,
+							[string]$fileName)
 {
 	begin {	# 1回だけやっておけばいいような処理を記載。For-Each objectで呼ばれると、ループ処理開始前に1回呼ばれる。
+
+		# 引数チェック
+		if( -not (Test-Path -Path $destPath -PathType Container) ){Write-Host -ForegroundColor Red "`n保存先のフォルダ($destPath)が見つかりません。正しいフォルダ名を指定してください。"; exit -1}
+		if( [string]::IsNullOrEmpty($fileName) ){
+			# ファイル名が未指定の場合は「年月日-時分秒」をファイル名とする
+			$fileName = Get-Date -Format yyyyMMdd-HHmmss
+			$fileName = $fileName + ".png"
+		}
+		[string]$destFilePath = Join-Path $destPath $fileName
+		if( Test-Path -Path $destFilePath -PathType Leaf ){
+			$Ans = Read-Host "`n指定のファイルは既に存在しています。`n上書きしてもよろしいですか？(Y/N)"
+			if( $Ans -ne "Y" ){Write-Host "`n別ファイル名を指定してください"; exit 0}
+		}
+
 
 		Add-Type -AssemblyName System.Windows.Forms
 
@@ -24,11 +63,6 @@ function Take-Screenshot( [ScreenshotTarget]$targetDisplay = ([ScreenshotTarget]
 		# 高DPI対応済み設定に変更(PowerShell標準設定では画面座標取得時に画面拡大率分だけ小さい値を返されるので)
 		[int]$DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-3)
 
-		# 出力先の Path + Filename 作成
-		[string]$filename = Get-Date -Format yyyyMMdd-HHmmss
-		$filename = $filename + ".png"
-		[string]$destFilePath = Join-Path $destPath $filename
-		
 		Write-Host ""
 		Write-Host "Target screen : $([string]$targetDisplay)"
 		Write-Host "Destination file : $destFilePath"
@@ -90,7 +124,7 @@ function Take-Screenshot( [ScreenshotTarget]$targetDisplay = ([ScreenshotTarget]
 		[object]$bitmap = New-Object System.Drawing.Bitmap( $targetWidth, $targetHeight )	# Screenshotを撮る領域サイズのbitmap objctを作成
 		[object]$image = [System.Drawing.Graphics]::FromImage( $bitmap )					# Screen image取得用に image objectを作成
 		$image.CopyFromScreen( (New-Object System.Drawing.Point($targetLeft,$targetTop)), (New-Object System.Drawing.Point(0,0)), $bitmap.size )
-		$image.Dispose()					# image resource廃棄
+		$image.Dispose()																	# Graphics resource廃棄
 		$bitmap.Save( $destFilePath )
 	}
 
@@ -101,4 +135,4 @@ function Take-Screenshot( [ScreenshotTarget]$targetDisplay = ([ScreenshotTarget]
 }
 
 
-Take-Screenshot
+Take-Screenshot $targetDisplayNumber $outputDirectory $outputFileName

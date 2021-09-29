@@ -3,29 +3,29 @@ Add-Type -AssemblyName system.windows.forms
 
 
 
-# ­‚µ‚¾‚¯¡‚Ç‚«‚Ì Control•\¦‚É‚·‚é
+# å°‘ã—ã ã‘ä»Šã©ãã® Controlè¡¨ç¤ºã«ã™ã‚‹
 [System.Windows.Forms.Application]::EnableVisualStyles()
 [System.Windows.Forms.Application]::VisualStyleState = 3
 
-# Win32api‚ğimport
+# Win32apiã‚’import
 Add-Type -MemberDefinition @"
 [DllImport("user32.dll", SetLastError=true)]
 public static extern short SetThreadDpiAwarenessContext(short dpiContext);
 "@ -Namespace Win32 -Name NativeMethods
 
-# ‚DPI‘Î‰Ï‚İİ’è‚É•ÏX(ƒtƒHƒ‹ƒ_‘I‘ğƒ_ƒCƒAƒƒO‚ğ‚Ú‚â‚¯‚½•\¦‚É‚³‚¹‚È‚¢‚½‚ß)
+# é«˜DPIå¯¾å¿œæ¸ˆã¿è¨­å®šã«å¤‰æ›´(ãƒ•ã‚©ãƒ«ãƒ€é¸æŠãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ã¼ã‚„ã‘ãŸè¡¨ç¤ºã«ã•ã›ãªã„ãŸã‚)
 [int]$DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-4)
 
 # [System.Windows.Forms.MessageBox]::Show("This is my msgbox")
 
 $fbDlg = New-Object System.Windows.Forms.FolderBrowserDialog
-$fbDlg.Description = "Screenshot‚Ì•Û‘¶æƒtƒHƒ‹ƒ_‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B"
-$fbDlg.SelectedPath = $PSScriptRoot		# Default folder‚Í‚Ğ‚Æ‚Ü‚¸ Script‚ª‚ ‚éêŠ‚É‚·‚é
+$fbDlg.Description = "Screenshotã®ä¿å­˜å…ˆãƒ•ã‚©ãƒ«ãƒ€ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚"
+$fbDlg.SelectedPath = $PSScriptRoot		# Default folderã¯ã²ã¨ã¾ãš ScriptãŒã‚ã‚‹å ´æ‰€ã«ã™ã‚‹
 
-# ƒtƒHƒ‹ƒ_‘I‘ğƒ_ƒCƒAƒƒO‚ğ•\¦
+# ãƒ•ã‚©ãƒ«ãƒ€é¸æŠãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’è¡¨ç¤º
 $result = $fbDlg.ShowDialog()
 if( $result -eq [System.Windows.Forms.DialogResult]::Cancel ){
-	# ŠÂ‹«•Ï”‚ğíœ
+	# ç’°å¢ƒå¤‰æ•°ã‚’å‰Šé™¤
 	[Environment]::SetEnvironmentVariable( "TakeScreenshot_SaveToFolder", $null, [System.EnvironmentVariableTarget]::User )
 }
 else {

@@ -2,7 +2,7 @@
 
 Powershell で Screenshot を撮る。Primary, Secondary display まで。仕事で使っているのが2画面なので。
 
-# ToDo
+## ToDo
 
 1. 動作環境についての記載
 1. 想定している使い方(何が便利になるのか、何を解決するものなのか)
@@ -15,4 +15,11 @@ Powershell で Screenshot を撮る。Primary, Secondary display まで。仕事
 
 
 
- 
+- [ ] Screenshot後に保存した画像を表示する
+- [ ] 設定画面
+  - [ ] 保存先path表示
+  - [ ] 保存先📁選択
+  - [ ] 保存先情報削除
+  - [ ] 保存後に画像を表示
+
+

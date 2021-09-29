@@ -1,7 +1,8 @@
 @echo off
 pushd %~dp0
 
-powershell -ExecutionPolicy RemoteSigned -WindowStyle Hidden -File ".\Set-SaveFolder.ps1"
+rem powershell -ExecutionPolicy RemoteSigned -WindowStyle Hidden -File ".\settings.ps1"
+powershell -ExecutionPolicy RemoteSigned -File ".\settings.ps1"
 
 popd
 pause

@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.speech
+ï»¿Add-Type -AssemblyName System.speech
 $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer
 
 
@@ -6,5 +6,5 @@ $speak.GetInstalledVoices() | select -ExpandProperty VoiceInfo | select Name, Ge
 
 
 $speak.SelectVoice("Microsoft Haruka Desktop")
-$speak.Speak('ƒXƒNƒŠ[ƒ“ƒVƒ‡ƒbƒg‚ğB‚éƒXƒNƒŠƒvƒg‚Å‚·B€”õ‚Í‚æ‚ë‚µ‚¢‚Å‚·‚©H')
+$speak.Speak('ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆã‚’æ’®ã‚‹ã‚¹ã‚¯ãƒªãƒ—ãƒˆã§ã™ã€‚æº–å‚™ã¯ã‚ˆã‚ã—ã„ã§ã™ã‹ï¼Ÿ')
 # $speak.Speak("This is a script that takes screenshots.")

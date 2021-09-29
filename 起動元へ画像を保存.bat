@@ -8,10 +8,10 @@ echo.
 echo [Shortcut file (.lnk) 起動元へ Screenshot保存]
 echo 起動元(画像出力先) : %CD%
 echo Script置き場 : %~dp0
-pushd %~dp0
+rem pushd %~dp0
 
-rem powershell -ExecutionPolicy RemoteSigned -WindowStyle Hidden -File "%~dp0Take-Screenshot.ps1" %1 "%CD%"
-powershell -ExecutionPolicy RemoteSigned -File "%~dp0Take-Screenshot.ps1" %1 "%CD%"
+rem powershell -ExecutionPolicy RemoteSigned -WindowStyle Hidden -File "%~dp0main.ps1" %1 "%CD%"
+powershell -ExecutionPolicy RemoteSigned -File "%~dp0main.ps1" %1 "%CD%"
 
-popd
+rem popd
 pause

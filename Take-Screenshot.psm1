@@ -1,23 +1,5 @@
-param(
-		[Parameter( ValueFromPipeline = $true )]
-		[int]$targetDisplayNumber = 0,
+﻿
 
-		[Parameter()][AllowEmptyString()]
-		[string]$outputDirectory,
-
-		[Parameter()][AllowEmptyString()]
-		[string]$outputFileName
-)
-if( [string]::IsNullOrEmpty($outputDirectory) ){
-	$outputDirectory = $PSScriptRoot
-}
-
-# Scriptそのものに対する定数定義
-New-Variable  -Name SCRIPT_NAME		-Value "Take-Screenshot"	-Option Constant  -Scope Script
-New-Variable  -Name SCRIPT_VERSION	-Value 0.8.0				-Option Constant  -Scope Script
-
-# Script title 出力
-Write-Host -ForegroundColor Yellow "`n---- $SCRIPT_NAME   version $SCRIPT_VERSION ----"
 
 
 
@@ -28,38 +10,13 @@ enum ScreenshotTarget {
 }
 
 
-function Take-Screenshot(
+# Screenshot を撮る
+# 
+function TakeScreenshot(
 							[ScreenshotTarget]$targetDisplay = ([ScreenshotTarget]::Primary),
-							[string]$destPath = $PSScriptRoot,
-							[string]$fileName)
+							[string]$destFilePath)
 {
 	begin {	# 1回だけやっておけばいいような処理を記載。For-Each objectで呼ばれると、ループ処理開始前に1回呼ばれる。
-
-		# 引数チェック
-		if( -not (Test-Path -Path $destPath -PathType Container) ){Write-Host -ForegroundColor Red "`n保存先のフォルダ($destPath)が見つかりません。正しいフォルダ名を指定してください。"; exit -1}
-		if( [string]::IsNullOrEmpty($fileName) ){
-			# ファイル名が未指定の場合は「年月日-時分秒」をファイル名とする
-			$fileName = Get-Date -Format yyyyMMdd-HHmmss
-			$fileName = $fileName + ".png"
-		}
-		[string]$destFilePath = Join-Path $destPath $fileName
-		if( Test-Path -Path $destFilePath -PathType Leaf ){
-			$Ans = Read-Host "`n指定のファイルは既に存在しています。`n上書きしてもよろしいですか？(Y/N)"
-			if( $Ans -ne "Y" ){Write-Host "`n別ファイル名を指定してください"; exit 0}
-		}
-
-
-		Add-Type -AssemblyName System.Windows.Forms
-
-		# Win32apiをimport
-		Add-Type -MemberDefinition @"
-		[DllImport("user32.dll", SetLastError=true)]
-		public static extern short SetThreadDpiAwarenessContext(short dpiContext);
-"@		-Namespace Win32 -Name NativeMethods
-
-		# 高DPI対応済み設定に変更(PowerShell標準設定では画面座標取得時に画面拡大率分だけ小さい値を返されるので)
-		[int]$DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-3)
-
 		Write-Host ""
 		Write-Host "Target screen : $([string]$targetDisplay)"
 		Write-Host "Destination file : $destFilePath"
@@ -126,12 +83,5 @@ function Take-Screenshot(
 	}
 
 	end {	# 1回だけやっておけばいいような処理を記載。For-Each objectで呼ばれると、ループ処理終了後に1回呼ばれる。
-		# 高Dpi対応設定を元に戻す
-		[void][Win32.NativeMethods]::SetThreadDpiAwarenessContext($DpiOldSetting)
 	}
 }
-
-
-Take-Screenshot $targetDisplayNumber $outputDirectory $outputFileName
-
-exit 0

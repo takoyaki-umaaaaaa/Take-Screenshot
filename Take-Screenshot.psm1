@@ -12,11 +12,11 @@ if( [string]::IsNullOrEmpty($outputDirectory) ){
 	$outputDirectory = $PSScriptRoot
 }
 
-# Script‚»‚Ì‚à‚Ì‚É‘Î‚·‚é’è”’è‹`
+# Scriptãã®ã‚‚ã®ã«å¯¾ã™ã‚‹å®šæ•°å®šç¾©
 New-Variable  -Name SCRIPT_NAME		-Value "Take-Screenshot"	-Option Constant  -Scope Script
 New-Variable  -Name SCRIPT_VERSION	-Value 0.8.0				-Option Constant  -Scope Script
 
-# Script title o—Í
+# Script title å‡ºåŠ›
 Write-Host -ForegroundColor Yellow "`n---- $SCRIPT_NAME   version $SCRIPT_VERSION ----"
 
 
@@ -24,7 +24,7 @@ Write-Host -ForegroundColor Yellow "`n---- $SCRIPT_NAME   version $SCRIPT_VERSIO
 enum ScreenshotTarget {
 	Primary		= 0
 	Secondary	= 1
-	# 2‰æ–Ê‚Ü‚ÅƒTƒ|[ƒg
+	# 2ç”»é¢ã¾ã§ã‚µãƒãƒ¼ãƒˆ
 }
 
 
@@ -33,31 +33,31 @@ function Take-Screenshot(
 							[string]$destPath = $PSScriptRoot,
 							[string]$fileName)
 {
-	begin {	# 1‰ñ‚¾‚¯‚â‚Á‚Ä‚¨‚¯‚Î‚¢‚¢‚æ‚¤‚Èˆ—‚ğ‹LÚBFor-Each object‚ÅŒÄ‚Î‚ê‚é‚ÆAƒ‹[ƒvˆ—ŠJn‘O‚É1‰ñŒÄ‚Î‚ê‚éB
+	begin {	# 1å›ã ã‘ã‚„ã£ã¦ãŠã‘ã°ã„ã„ã‚ˆã†ãªå‡¦ç†ã‚’è¨˜è¼‰ã€‚For-Each objectã§å‘¼ã°ã‚Œã‚‹ã¨ã€ãƒ«ãƒ¼ãƒ—å‡¦ç†é–‹å§‹å‰ã«1å›å‘¼ã°ã‚Œã‚‹ã€‚
 
-		# ˆø”ƒ`ƒFƒbƒN
-		if( -not (Test-Path -Path $destPath -PathType Container) ){Write-Host -ForegroundColor Red "`n•Û‘¶æ‚ÌƒtƒHƒ‹ƒ_($destPath)‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB³‚µ‚¢ƒtƒHƒ‹ƒ_–¼‚ğw’è‚µ‚Ä‚­‚¾‚³‚¢B"; exit -1}
+		# å¼•æ•°ãƒã‚§ãƒƒã‚¯
+		if( -not (Test-Path -Path $destPath -PathType Container) ){Write-Host -ForegroundColor Red "`nä¿å­˜å…ˆã®ãƒ•ã‚©ãƒ«ãƒ€($destPath)ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚æ­£ã—ã„ãƒ•ã‚©ãƒ«ãƒ€åã‚’æŒ‡å®šã—ã¦ãã ã•ã„ã€‚"; exit -1}
 		if( [string]::IsNullOrEmpty($fileName) ){
-			# ƒtƒ@ƒCƒ‹–¼‚ª–¢w’è‚Ìê‡‚Íu”NŒ“ú-•ª•bv‚ğƒtƒ@ƒCƒ‹–¼‚Æ‚·‚é
+			# ãƒ•ã‚¡ã‚¤ãƒ«åãŒæœªæŒ‡å®šã®å ´åˆã¯ã€Œå¹´æœˆæ—¥-æ™‚åˆ†ç§’ã€ã‚’ãƒ•ã‚¡ã‚¤ãƒ«åã¨ã™ã‚‹
 			$fileName = Get-Date -Format yyyyMMdd-HHmmss
 			$fileName = $fileName + ".png"
 		}
 		[string]$destFilePath = Join-Path $destPath $fileName
 		if( Test-Path -Path $destFilePath -PathType Leaf ){
-			$Ans = Read-Host "`nw’è‚Ìƒtƒ@ƒCƒ‹‚ÍŠù‚É‘¶İ‚µ‚Ä‚¢‚Ü‚·B`nã‘‚«‚µ‚Ä‚à‚æ‚ë‚µ‚¢‚Å‚·‚©H(Y/N)"
-			if( $Ans -ne "Y" ){Write-Host "`n•Êƒtƒ@ƒCƒ‹–¼‚ğw’è‚µ‚Ä‚­‚¾‚³‚¢"; exit 0}
+			$Ans = Read-Host "`næŒ‡å®šã®ãƒ•ã‚¡ã‚¤ãƒ«ã¯æ—¢ã«å­˜åœ¨ã—ã¦ã„ã¾ã™ã€‚`nä¸Šæ›¸ãã—ã¦ã‚‚ã‚ˆã‚ã—ã„ã§ã™ã‹ï¼Ÿ(Y/N)"
+			if( $Ans -ne "Y" ){Write-Host "`nåˆ¥ãƒ•ã‚¡ã‚¤ãƒ«åã‚’æŒ‡å®šã—ã¦ãã ã•ã„"; exit 0}
 		}
 
 
 		Add-Type -AssemblyName System.Windows.Forms
 
-		# Win32api‚ğimport
+		# Win32apiã‚’import
 		Add-Type -MemberDefinition @"
 		[DllImport("user32.dll", SetLastError=true)]
 		public static extern short SetThreadDpiAwarenessContext(short dpiContext);
 "@		-Namespace Win32 -Name NativeMethods
 
-		# ‚DPI‘Î‰Ï‚İİ’è‚É•ÏX(PowerShell•W€İ’è‚Å‚Í‰æ–ÊÀ•Wæ“¾‚É‰æ–ÊŠg‘å—¦•ª‚¾‚¯¬‚³‚¢’l‚ğ•Ô‚³‚ê‚é‚Ì‚Å)
+		# é«˜DPIå¯¾å¿œæ¸ˆã¿è¨­å®šã«å¤‰æ›´(PowerShellæ¨™æº–è¨­å®šã§ã¯ç”»é¢åº§æ¨™å–å¾—æ™‚ã«ç”»é¢æ‹¡å¤§ç‡åˆ†ã ã‘å°ã•ã„å€¤ã‚’è¿”ã•ã‚Œã‚‹ã®ã§)
 		[int]$DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-3)
 
 		Write-Host ""
@@ -66,16 +66,16 @@ function Take-Screenshot(
 	}
 
 	process{
-		# ‘S‰æ–Êî•ñæ“¾
+		# å…¨ç”»é¢æƒ…å ±å–å¾—
 		[object]$Screens = [System.Windows.Forms.Screen]::AllScreens
 
 		Write-Host "Display count : $($Screens.length)"
 		if( $targetDisplay -gt ($Screens.length - 1) ){
-			Write-Host -ForegroundColor Red "`n‰æ–Ê•Û‘¶‘ÎÛ‚Æ‚µ‚ÄA‘¶İ‚µ‚È‚¢‰æ–Ê‚ğw’è‚µ‚Ä‚¢‚Ü‚·B‘¶İ‚·‚é‰æ–Ê”‚Í $($Screens.length) ‚Å‚·B"
+			Write-Host -ForegroundColor Red "`nç”»é¢ä¿å­˜å¯¾è±¡ã¨ã—ã¦ã€å­˜åœ¨ã—ãªã„ç”»é¢ã‚’æŒ‡å®šã—ã¦ã„ã¾ã™ã€‚å­˜åœ¨ã™ã‚‹ç”»é¢æ•°ã¯ $($Screens.length) ã§ã™ã€‚"
 			exit -1
 		}
 
-		# æ“¾‚µ‚½‰æ–Êî•ñ‚²‚Æ‚ÉAì‹Æ—Ìˆæ‚ÌÀ•W‚ğæ“¾
+		# å–å¾—ã—ãŸç”»é¢æƒ…å ±ã”ã¨ã«ã€ä½œæ¥­é ˜åŸŸã®åº§æ¨™ã‚’å–å¾—
 		foreach( $screen in $Screens ){
 			if( $screen.Primary -eq $true ){
 				Write-Host ""
@@ -95,8 +95,8 @@ function Take-Screenshot(
 				Write-Host "Device Name = $($screen.DeviceName)"
 				Write-Host "WorkingArea.Left = $($screen.WorkingArea.Left), Top = $($screen.WorkingArea.Top), Width = $($screen.WorkingArea.Width), Height = $($screen.WorkingArea.Height)"
 
-				# Primary‚Å‚È‚¢‚È‚ç SecondaryŒˆ‚ß‘Å‚¿BPrimaryˆÈŠO‚Ì property‚ª–³‚¢‚©‚çB1PC‚É3‰æ–ÊˆÈã‚ª•W€‚É‚È‚ê‚Î property‚ª‘‚¦‚é‚Ì‚¾‚ë‚¤‚©EEE
-				# 2‰æ–ÊˆÈãÚ‘±‚µ‚Ä‚¢‚é‚Æ‰æ–Ê‚ªŒ©‚Â‚©‚é“x‚Éî•ñ‚ğã‘‚«‚³‚ê‚éB‚È‚Ì‚ÅSecondary‚Æ‚µ‚Ä‚ÍuÅŒã‚ÉŒ©‚Â‚©‚Á‚½‰æ–Ê‚Ìî•ñv‚ªc‚éB
+				# Primaryã§ãªã„ãªã‚‰ Secondaryæ±ºã‚æ‰“ã¡ã€‚Primaryä»¥å¤–ã® propertyãŒç„¡ã„ã‹ã‚‰ã€‚1PCã«3ç”»é¢ä»¥ä¸ŠãŒæ¨™æº–ã«ãªã‚Œã° propertyãŒå¢—ãˆã‚‹ã®ã ã‚ã†ã‹ãƒ»ãƒ»ãƒ»
+				# 2ç”»é¢ä»¥ä¸Šæ¥ç¶šã—ã¦ã„ã‚‹ã¨ç”»é¢ãŒè¦‹ã¤ã‹ã‚‹åº¦ã«æƒ…å ±ã‚’ä¸Šæ›¸ãã•ã‚Œã‚‹ã€‚ãªã®ã§Secondaryã¨ã—ã¦ã¯ã€Œæœ€å¾Œã«è¦‹ã¤ã‹ã£ãŸç”»é¢ã®æƒ…å ±ã€ãŒæ®‹ã‚‹ã€‚
 				[int]$secondaryLeft		= $screen.WorkingArea.Left
 				[int]$secondaryTop		= $screen.WorkingArea.Top
 				[int]$secondaryWidth	= $screen.WorkingArea.Width
@@ -118,15 +118,15 @@ function Take-Screenshot(
 		}
 		
 
-		[object]$bitmap = New-Object System.Drawing.Bitmap( $targetWidth, $targetHeight )	# Screenshot‚ğB‚é—ÌˆæƒTƒCƒY‚Ìbitmap objct‚ğì¬
-		[object]$image = [System.Drawing.Graphics]::FromImage( $bitmap )					# Screen imageæ“¾—p‚É image object‚ğì¬
+		[object]$bitmap = New-Object System.Drawing.Bitmap( $targetWidth, $targetHeight )	# Screenshotã‚’æ’®ã‚‹é ˜åŸŸã‚µã‚¤ã‚ºã®bitmap objctã‚’ä½œæˆ
+		[object]$image = [System.Drawing.Graphics]::FromImage( $bitmap )					# Screen imageå–å¾—ç”¨ã« image objectã‚’ä½œæˆ
 		$image.CopyFromScreen( (New-Object System.Drawing.Point($targetLeft,$targetTop)), (New-Object System.Drawing.Point(0,0)), $bitmap.size )
-		$image.Dispose()																	# Graphics resource”pŠü
+		$image.Dispose()																	# Graphics resourceå»ƒæ£„
 		$bitmap.Save( $destFilePath )
 	}
 
-	end {	# 1‰ñ‚¾‚¯‚â‚Á‚Ä‚¨‚¯‚Î‚¢‚¢‚æ‚¤‚Èˆ—‚ğ‹LÚBFor-Each object‚ÅŒÄ‚Î‚ê‚é‚ÆAƒ‹[ƒvˆ—I—¹Œã‚É1‰ñŒÄ‚Î‚ê‚éB
-		# ‚Dpi‘Î‰İ’è‚ğŒ³‚É–ß‚·
+	end {	# 1å›ã ã‘ã‚„ã£ã¦ãŠã‘ã°ã„ã„ã‚ˆã†ãªå‡¦ç†ã‚’è¨˜è¼‰ã€‚For-Each objectã§å‘¼ã°ã‚Œã‚‹ã¨ã€ãƒ«ãƒ¼ãƒ—å‡¦ç†çµ‚äº†å¾Œã«1å›å‘¼ã°ã‚Œã‚‹ã€‚
+		# é«˜Dpiå¯¾å¿œè¨­å®šã‚’å…ƒã«æˆ»ã™
 		[void][Win32.NativeMethods]::SetThreadDpiAwarenessContext($DpiOldSetting)
 	}
 }

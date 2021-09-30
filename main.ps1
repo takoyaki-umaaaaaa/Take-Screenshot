@@ -27,7 +27,6 @@ scriptInitCommon
 
 # Script title 出力
 Write-Host -ForegroundColor Yellow "`n---- $global:SCRIPT_NAME   version $SCRIPT_VERSION ----"
-Write-Host -ForegroundColor Yellow "日本語表示"
 
 # [System.Windows.Forms.MessageBox]::Show("This is my msgbox")
 
@@ -35,13 +34,13 @@ Write-Host -ForegroundColor Yellow "日本語表示"
 
 # 保存先が未設定であれば、保存先フォルダ選択ダイアログで選択してもらう
 if( [string]::IsNullOrEmpty($outputDirectory) ){
-	[boolean]$result = checkUserEnvironmentValiableExists $ENV_SAVEFOLDER
+	[boolean]$result = checkUserEnvironmentValiableExists $global:ENV_SAVEFOLDER
 	if( $result -eq $false ){
 		[boolean]$ret = askToSelectSaveFolder
 		if( $ret -eq $false ){
 			exit 0
 		}
-		[string]$outputDirectory = [Environment]::GetEnvironmentVariable( $ENV_SAVEFOLDER, [System.EnvironmentVariableTarget]::User )
+		[string]$outputDirectory = [Environment]::GetEnvironmentVariable( $global:ENV_SAVEFOLDER, [System.EnvironmentVariableTarget]::User )
 	}
 }
 

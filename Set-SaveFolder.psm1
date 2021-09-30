@@ -56,11 +56,11 @@ function askToSelectSaveFolder()
 	$result = $fbDlg.ShowDialog()
 	if( $result -eq [System.Windows.Forms.DialogResult]::Cancel ){
 		# 環境変数を削除
-		[Environment]::SetEnvironmentVariable( $ENV_SAVEFOLDER, $null, [System.EnvironmentVariableTarget]::User )
+		[Environment]::SetEnvironmentVariable( $global:ENV_SAVEFOLDER, $null, [System.EnvironmentVariableTarget]::User )
 		$ret = $false
 	}
 	else {
-		[Environment]::SetEnvironmentVariable( $ENV_SAVEFOLDER, "$($fbDlg.SelectedPath)", [System.EnvironmentVariableTarget]::User )
+		[Environment]::SetEnvironmentVariable( $global:ENV_SAVEFOLDER, "$($fbDlg.SelectedPath)", [System.EnvironmentVariableTarget]::User )
 		$ret = $true
 	}
 

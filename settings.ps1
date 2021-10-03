@@ -21,8 +21,6 @@ Import-Module -Name $PSScriptRoot\SettingWindow.psm1
 [xml]$xaml = $global:SettingDlgXaml
 $xamlReader = $xaml -as "System.Xml.XmlNodeReader"
 $SettingWnd = [Windows.Markup.XamlReader]::Load( $xamlReader )
-# Window Loaded eventで Iconを変更
-$SettingWnd.add_Loaded( {$SettingWnd.Icon = ($PSScriptRoot + "\resource\Setting.ico")} )
 
 
 # Control elementの objectを取得
@@ -33,17 +31,17 @@ foreach( $ctl in $global:Controls ){
 	$cnt++
 }
 
+# 保存先フォルダの設定状態を表示
+[string]$saveFolder = [Environment]::GetEnvironmentVariable( $global:ENV_SAVEFOLDER, [System.EnvironmentVariableTarget]::User )
+$global:Controls[2].Element.Text = $saveFolder
+
 # Event handler登録
-$btnSelectFolder_click = $global:Controls[3].Element.add_Click({askToSelectSaveFolder})	# 保存先指定Dialogを開くボタン
-$btnDeleteEnvVal_click = $global:Controls[4].Element.add_Click({[Environment]::SetEnvironmentVariable( $global:ENV_SAVEFOLDER, $null, [System.EnvironmentVariableTarget]::User )})	# 環境変数を削除するボタン
-$btnDeleteEnvVal_click = $global:Controls[8].Element.add_Click({$SettingWnd.Close()})	# [閉じる]ボタン
+$global:Controls[3].Element.add_Click({$ret = askToSelectSaveFolder $global:Controls[2].Element.Text; $global:Controls[2].Element.Text = $ret})		# 保存先指定Dialogを開くボタン
+$global:Controls[4].Element.add_Click({[Environment]::SetEnvironmentVariable( $global:ENV_SAVEFOLDER, $null, [System.EnvironmentVariableTarget]::User );  $global:Controls[2].Element.Text = $null})	# 環境変数を削除するボタン
+$global:Controls[8].Element.add_Click({$SettingWnd.Close()})		# [閉じる]ボタン
 
 # Dialog表示 (Dialogの[閉じる]ボタン押下まで帰ってこない)
 [void]$SettingWnd.showDialog()
-
-
-# フォルダ選択ダイアログ表示
-# [boolean]$ret = askToSelectSaveFolder
 
 # 終了処理
 scriptEndCommon

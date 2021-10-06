@@ -1,4 +1,8 @@
-﻿# Script共通の定義・初期化処理
+﻿Set-StrictMode -Version 3.0
+$ErrorActionPreference = "stop"						# エラーが発生した場合はスクリプトの実行を停止
+
+
+# Script共通の定義・初期化処理
 function scriptInitCommon() {
 	Add-Type -AssemblyName system.windows.forms
 
@@ -14,60 +18,23 @@ function scriptInitCommon() {
 	[System.Windows.Forms.Application]::VisualStyleState = 3
 
 	# Win32apiをimport
+	# High DPI 対応についての情報は以下を参照
+	# https://blogs.windows.com/windowsdeveloper/2016/10/24/high-dpi-scaling-improvements-for-desktop-applications-and-mixed-mode-dpi-scaling-in-the-windows-10-anniversary-update/
+	# https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-improvements-for-desktop-applications
+	# この documentから、「設定変更→window作成」すると、そのWindowの設定は変更できないように見える
 	Add-Type -MemberDefinition @"
 	[DllImport("user32.dll", SetLastError=true)]
-	public static extern short SetThreadDpiAwarenessContext(short dpiContext);
+	public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
 "@ -Namespace Win32 -Name NativeMethods
 
-	# 高DPI対応済み設定に変更(フォルダ選択ダイアログをぼやけた表示にさせないため)
-	[int]$script:DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-4)
+	[IntPtr]$script:DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-4)
+	Write-Host "DpiOldSetting : $($script:DpiOldSetting)-----------------"
+	$aaa = [System.Windows.Forms.Screen]::AllScreens
+	Write-Host "$aaa"
 }
 
-function conv-ver() {
-	Add-Type -AssemblyName System.Drawing
 
-	Write-Host "call"
-	# Win32apiをimport
-	Add-Type -MemberDefinition @"
-	[StructLayout(LayoutKind.Sequential)]
-	struct RECT {
-		public int left;
-		public int top;
-		public int right;
-		public int bottom;
-	}
-	[StructLayout(LayoutKind.Sequential)]
-	struct MONITORINFO {
-		public UInt32	cbSize;
-		public RECT		rcMonitor;
-		public RECT		rcWork;
-		public UInt32	dwFlags;
-	}
-	[DllImport("user32.dll", SetLastError=true)]
-	public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-	[DllImport("user32.dll", SetLastError=true)]
-	public static extern IntPtr FindWindow(string lpClassName, IntPtr lpWindowName);
-	[DllImport("user32.dll", SetLastError=true)]
-	public static extern IntPtr FindWindow(IntPtr lpClassName, string lpWindowName);
 
-	[DllImport("user32.dll", SetLastError=true)]
-	public static extern IntPtr MonitorFromWindow(IntPtr hwnd, UInt32 dwFlags);
-
-	[DllImport("user32.dll", SetLastError=true)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool GetMonitorInfo(IntPtr hMonitor, ref IntPtr lpmk);
-
-"@ -Namespace Win32 -Name NativeDPIs
-
-	Write-Host "findwindow"
-	[IntPtr]$hWnd = [Win32.NativeDPIs]::FindWindow( [IntPtr]::Zero, "先ほど撮ったScreenshot画像を表示")
-	Write-Host "HWND = $hWnd"
-	[IntPtr]$hMonitor = [Win32.NativeDPIs]::MonitorFromWindow( $hWnd, 2 )
-	Write-Host "HMONITOR = $hMonitor"
-
-	$info = New-Object Win32.NativeDPIs.MONITORINFO
-
-}
 
 function scriptEndCommon() {
 	# 高Dpi対応設定を元に戻す
@@ -91,7 +58,7 @@ function checkUserEnvironmentValiableExists( [string]$envName )
 # 選択された場合、保存先環境変数にパスを設定する
 function askToSelectSaveFolder([string]$path)
 {
-	$fbDlg = New-Object System.Windows.Forms.FolderBrowserDialog
+	[object]$fbDlg = New-Object System.Windows.Forms.FolderBrowserDialog
 	$fbDlg.Description = "Screenshotの保存先フォルダを選択してください。"
 
 	# Dlg初期フォルダ設定：存在しないフォルダが指定されている場合はスクリプトが保存されているフォルダを指すようにする
@@ -107,7 +74,7 @@ function askToSelectSaveFolder([string]$path)
 
 
 	# フォルダ選択ダイアログを表示
-	$result = $fbDlg.ShowDialog()
+	[System.Windows.Forms.DialogResult]$result = $fbDlg.ShowDialog()
 	if( $result -eq [System.Windows.Forms.DialogResult]::Cancel ){
 		# 未設定で呼び出された場合、未設定を返す必要がある
 		# 存在しないパスを指定されていても、Cancel選択時はそのままで返す

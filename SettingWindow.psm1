@@ -24,7 +24,7 @@ $global:Controls =
 $global:SettingDlgXaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		Title="設定画面" Height="515" Width="460" WindowStyle="ThreeDBorderWindow" SnapsToDevicePixels="True" ResizeMode="CanResizeWithGrip"  MinWidth="400" MinHeight="500"  FontFamily="UD Digi Kyokasho N-R" FontSize="18" Icon="$res_img_background">
+		Title="設定画面" Name="baseWindow" Height="515" Width="460" WindowStyle="ThreeDBorderWindow" SnapsToDevicePixels="True" ResizeMode="CanResizeWithGrip"  MinWidth="400" MinHeight="500" ShowInTaskbar = "True" FontFamily="UD Digi Kyokasho N-R" FontSize="18" Icon="$res_img_background">
 	<Grid Margin="0,0,0,0">
 		<Grid.Background>
 			<LinearGradientBrush EndPoint="1,1" StartPoint="0,0">

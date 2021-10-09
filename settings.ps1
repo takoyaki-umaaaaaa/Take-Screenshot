@@ -3,8 +3,8 @@
 # (そのためregistryに内容が保持される)
 
 # Requires -Version 5.0
-Import-Module -Name $PSScriptRoot\Set-SaveFolder.psm1
-Import-Module -Name $PSScriptRoot\minWindow.psm1
+. $PSScriptRoot\Utilities.ps1
+Import-Module -Name $PSScriptRoot\dummyWindow.psm1
 
 Add-Type -AssemblyName system.windows.forms
 Add-Type -AssemblyName PresentationFramework
@@ -15,13 +15,19 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = "stop"						# エラーが発生した場合はスクリプトの実行を停止
 $PSDefaultParameterValues['out-file:width'] = 2000	# Script実行中は1行あたり2000文字設定
 
-# 共通初期化処理
-scriptInitCommon
+Add-Type -AssemblyName system.windows.forms
+# 少しだけ今どきの Control表示にする
+[System.Windows.Forms.Application]::EnableVisualStyles()
+[System.Windows.Forms.Application]::VisualStyleState = 3
+
+# Window作成前に呼ぶことで、これ以降にこのScriptで作られる
+# Top Level windowが High DPI対応として動作する
+$script:DpiAwareness = SetThreadDpiAwarenessContext(-4)
 
 # 設定dialogを読み込み
 Import-Module -Name $PSScriptRoot\SettingWindow.psm1
 #[xml]$xaml = Get-Content ($PSScriptRoot + "\SettingWindow.xaml")
-[xml]$xaml = $global:SettingDlgXaml
+[xml]$xaml  = $global:SettingDlgXaml
 $xamlReader = $xaml -as "System.Xml.XmlNodeReader"
 $SettingWnd = [Windows.Markup.XamlReader]::Load( $xamlReader )
 
@@ -36,12 +42,12 @@ foreach( $ctl in $global:Controls ){
 $baseWnd = $SettingWnd.FindName( "baseWindow" )
 
 # 保存先フォルダの設定状態を表示
-[string]$saveFolder = [Environment]::GetEnvironmentVariable( $global:ENV_SAVEFOLDER, [System.EnvironmentVariableTarget]::User )
+[string]$saveFolder = [Environment]::GetEnvironmentVariable( "Take-Screenshot", [System.EnvironmentVariableTarget]::User )
 $global:Controls[2].Element.Text = $saveFolder
 
 # Event handler登録
 $global:Controls[3].Element.add_Click({$ret = askToSelectSaveFolder $global:Controls[2].Element.Text; $global:Controls[2].Element.Text = $ret})		# 保存先指定Dialogを開くボタン
-$global:Controls[4].Element.add_Click({[Environment]::SetEnvironmentVariable( $global:ENV_SAVEFOLDER, $null, [System.EnvironmentVariableTarget]::User );  $global:Controls[2].Element.Text = $null})	# 環境変数を削除するボタン
+$global:Controls[4].Element.add_Click({[Environment]::SetEnvironmentVariable( "Take-Screenshot", $null, [System.EnvironmentVariableTarget]::User );  $global:Controls[2].Element.Text = $null})	# 環境変数を削除するボタン
 $global:Controls[8].Element.add_Click({$SettingWnd.Close()})		# [閉じる]ボタン
 
 $baseWnd.add_Loaded({
@@ -49,22 +55,26 @@ $baseWnd.add_Loaded({
 	Write-Host "hwndSetting = $hwndSetting"
 
 
-	[IntPtr]$script:DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-1)
+	[IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-1)
 	displayDummyWindow $script:hwndSetting
-	[Win32.NativeMethods]::SetThreadDpiAwarenessContext($script:DpiOldSetting)
 
-	[IntPtr]$script:DpiOldSetting = [Win32.NativeMethods]::SetThreadDpiAwarenessContext(-4)
+	[IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-4)
 	displayDummyWindow $script:hwndSetting
-	[Win32.NativeMethods]::SetThreadDpiAwarenessContext($script:DpiOldSetting)
+
+	SetThreadDpiAwarenessContext($script:DpiOldSetting)
 
 	[object]$Screens = [System.Windows.Forms.Screen]::AllScreens
 	Write-Host "$Screens"
 
 })
 
+
+
+
+
+
 # Dialog表示 (Dialogの[閉じる]ボタン押下まで帰ってこない)
 [void]$SettingWnd.showDialog()
 
 # 終了処理
-scriptEndCommon
 exit 0

@@ -1,7 +1,7 @@
-# ŠÂ‹«İ’è
+ï»¿# ç’°å¢ƒè¨­å®š
 Set-StrictMode -Version 3.0
-$ErrorActionPreference = "stop"						# ƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚ÍƒXƒNƒŠƒvƒg‚ÌÀs‚ğ’â~
-$PSDefaultParameterValues['out-file:width'] = 2000	# ScriptÀs’†‚Í1s‚ ‚½‚è2000•¶šİ’è
+$ErrorActionPreference = "stop"						# ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸå ´åˆã¯ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®å®Ÿè¡Œã‚’åœæ­¢
+$PSDefaultParameterValues['out-file:width'] = 2000	# Scriptå®Ÿè¡Œä¸­ã¯1è¡Œã‚ãŸã‚Š2000æ–‡å­—è¨­å®š
 
 [string]$res_icon		= Join-Path "$PSScriptRoot" ".\resource\Gear.png"
 [string]$res_background	= Join-Path "$PSScriptRoot" ".\resource\Gear2.png"
@@ -24,8 +24,8 @@ function GetDisplayScaling([IntPtr]$hParentWnd) {
 	}
 "@
 
-	# Low DPI window ‚Æ High DPI window ‚ğ maximize‚Åì¬‚µA
-	# æ“¾‚µ‚½À•W’l‚©‚ç Display scaling‚ğo‚·B
+	# Low DPI window ã¨ High DPI window ã‚’ maximizeã§ä½œæˆã—ã€
+	# å–å¾—ã—ãŸåº§æ¨™å€¤ã‹ã‚‰ Display scalingã‚’å‡ºã™ã€‚
 	
 	# Low DPI window
 	[IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-1)
@@ -44,35 +44,41 @@ function GetPictureWndXaml() {
 	return @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		Title="æ‚Ù‚ÇB‚Á‚½Screenshot‰æ‘œ‚ğ•\¦" x:Name="basewindow" WindowStyle="ThreeDBorderWindow" Background="Black" SnapsToDevicePixels="True" ResizeMode="CanResizeWithGrip" ShowInTaskbar = "True" FontFamily="UD Digi Kyokasho N-R" FontSize="18" Icon="$res_icon">
+		Title="å…ˆã»ã©æ’®ã£ãŸScreenshotç”»åƒã‚’è¡¨ç¤º" x:Name="basewindow" WindowStyle="ThreeDBorderWindow" Background="Black" SnapsToDevicePixels="True" ResizeMode="CanResizeWithGrip" ShowInTaskbar = "True" FontFamily="UD Digi Kyokasho N-R" FontSize="18" Icon="$res_icon">
 	<WindowChrome.WindowChrome>
 		<WindowChrome GlassFrameThickness="0" ResizeBorderThickness="10" CornerRadius="0" CaptionHeight="0" UseAeroCaptionButtons="True"/>
 	</WindowChrome.WindowChrome>
 	<Window.TaskbarItemInfo>
-		<TaskbarItemInfo x:Name="Displ1ayPicture" Overlay="$res_picicon" Description="Screenshot‚ÅB‚Á‚½‰æ‘œ" />
+		<TaskbarItemInfo x:Name="Displ1ayPicture" Overlay="$res_picicon" Description="Screenshotã§æ’®ã£ãŸç”»åƒ" />
 	</Window.TaskbarItemInfo>
 
-
-	<Image x:Name="image1" Source="$ctrlPicture" Margin="10,10,10,10" Stretch="UniForm"/>
-
+	<Canvas		x:Name="canvas1" Margin="10,10,10,10">
+		<Image	x:Name="image1"												Canvas.Top="0"		Canvas.Left="0"  Source="$ctrlPicture" Stretch="UniForm"/>
+		<Viewbox	x:Name="viwFolder"	Canvas.Bottom="20"	Canvas.Left="20"	Stretch="Fill">
+			<Button	x:Name="btnFolder"	Content="ä¿å­˜å…ˆã®&#xD;&#xA;ğŸ“ã‚’é–‹ã"	Background="White"		Cursor="Hand"	VerticalContentAlignment="Center"  Opacity="0.3" FontSize="75"  />
+		</Viewbox>
+		<Viewbox	x:Name="viwClose"	Canvas.Bottom="20"	Canvas.Right="20"	Stretch="Fill">
+			<Button	x:Name="btnClose"	Content="é–‰ã˜ã‚‹"						Background="White"		Cursor="Hand"	VerticalContentAlignment="Center"  Opacity="0.3" FontSize="16"  />
+		</Viewbox>
+	</Canvas>
 </Window>
 "@
 }
 
 function ShowPicture([string]$picFilePath) {
 	Write-Host "`n---------- DisplayPicture.psm1 -- ShowPicture ------------------------------------------"
-	Add-Type -AssemblyName system.windows.forms
+	Add-Type -AssemblyName system.Windows.forms
 	Add-Type -AssemblyName PresentationFramework
 	Add-Type -AssemblyName System.IO
 	Add-Type -AssemblyName System.Drawing
 
-	# ­‚µ‚¾‚¯¡‚Ç‚«‚Ì Control•\¦‚É‚·‚é
+	# å°‘ã—ã ã‘ä»Šã©ãã® Controlè¡¨ç¤ºã«ã™ã‚‹
 	Add-Type -AssemblyName system.windows.forms
 	[System.Windows.Forms.Application]::EnableVisualStyles()
 	[System.Windows.Forms.Application]::VisualStyleState = 3
 
-	# Windowì¬‘O‚ÉŒÄ‚Ô‚±‚Æ‚ÅA‚±‚êˆÈ~‚É‚±‚ÌScript‚Åì‚ç‚ê‚é
-	# Top Level window‚ª High DPI‘Î‰‚Æ‚µ‚Ä“®ì‚·‚é
+	# Windowä½œæˆå‰ã«å‘¼ã¶ã“ã¨ã§ã€ã“ã‚Œä»¥é™ã«ã“ã®Scriptã§ä½œã‚‰ã‚Œã‚‹
+	# Top Level windowãŒ High DPIå¯¾å¿œã¨ã—ã¦å‹•ä½œã™ã‚‹
 	$script:DpiAwareness = SetThreadDpiAwarenessContext(-1)
 
 	$ctrlPicture = $picFilePath
@@ -80,12 +86,17 @@ function ShowPicture([string]$picFilePath) {
 	[xml]$xaml = GetPictureWndXaml
 	[System.Xml.XmlNodeReader]$xamlReader = $xaml -as "System.Xml.XmlNodeReader"
 	[object]$PictureWnd = [Windows.Markup.XamlReader]::Load( $xamlReader )
-	# Control element‚Ì object‚ğæ“¾
-	[object]$eleWnd = $PictureWnd.FindName( "basewindow" )
-	[object]$elePic = $PictureWnd.FindName( "image1" )
+	# Control elementã® objectã‚’å–å¾—
+	[object]$eleWnd			= $PictureWnd.FindName( "basewindow" )
+	[object]$eleCanvas		= $PictureWnd.FindName( "canvas1" )
+	[object]$elePic			= $PictureWnd.FindName( "image1" )
+	[object]$eleBtnFolder	= $PictureWnd.FindName( "btnFolder" )
+	[object]$eleBtnClose	= $PictureWnd.FindName( "btnClose" )
+	[object]$eleViwFolder	= $PictureWnd.FindName( "viwFolder" )
+	[object]$eleViwClose	= $PictureWnd.FindName( "viwClose" )
 
-	# Event handler“o˜^
-	# $elePic.add_Click({$PictureWnd.Close()})
+	# Event handlerç™»éŒ²
+#	$eleWnd.Add_MouseLeftButtonDown({ param($sender, $e); $e | Get-Member | Write-Host; $eleWnd.DragMove(); })
 	$eleWnd.Add_MouseLeftButtonDown({ $eleWnd.DragMove() })
 	$eleWnd.Add_MouseRightButtonDown({ $PictureWnd.Close() })
 
@@ -94,12 +105,10 @@ function ShowPicture([string]$picFilePath) {
 			Write-Host "Window Loaded"
 			$fileInfo = [System.Drawing.Image]::FromFile($picFilePath)
 
-			Write-Host "Window Loaded"
 			[double]$scale = GetDisplayScaleValue
-			Write-Host "Window Loaded"
-			[double]$size = 0.1		# ‰æ‘œ‚ğˆêŠ„k¬‚µ‚Ä’†‰›Šñ‚¹‚Å•\¦‚·‚é
-			Write-Host "Window Loaded"
+			[double]$size = 0.1		# ç”»åƒã‚’ä¸€å‰²ç¸®å°ã—ã¦ä¸­å¤®å¯„ã›ã§è¡¨ç¤ºã™ã‚‹
 
+			# ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ç”»åƒã®ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”ã«åˆã‚ã›ãŸã‚µã‚¤ã‚ºã«å¤‰æ›´ã—ã¦è¡¨ç¤º
 			$eleWnd.Left	= $fileInfo.Width  * $size / 2 / $scale
 			$eleWnd.Top		= $fileInfo.Height * $size / 2 / $scale
 			$eleWnd.Width	= $fileInfo.Width  * (1 - $size) / $scale
@@ -112,7 +121,27 @@ function ShowPicture([string]$picFilePath) {
 		}
 	})
 
-	# Dialog•\¦ (Dialog‚Ì[•Â‚¶‚é]ƒ{ƒ^ƒ“‰Ÿ‰º‚Ü‚Å‹A‚Á‚Ä‚±‚È‚¢)
+	$eleCanvas.Add_SizeChanged({
+		# Controlã®å†é…ç½®ã€‚
+		# ç”»åƒã¯ Canvasã¨åŒã˜å¤§ãã•ã€‚
+		$elePic.Width = $eleCanvas.ActualWidth; $elePic.Height = $eleCanvas.ActualHeight;
+
+		# ğŸ“ã‚’é–‹ããƒœã‚¿ãƒ³
+		# ViewBoxã¯ Canvasä¸Šã§ã¯è‡ªå‹•ã§æ‹¡å¤§ç¸®å°ã—ãªã„ã£ã½ã„ãŒã€æ‰‹å‹•ã§å¤‰ãˆã‚Œã°å†…å®¹ã¯è‡ªå‹•ã§å¤‰ãˆã¦ãã‚Œã‚‹
+		# ãŸã ã€Font sizeã‚’è¨ˆç®—ã™ã‚‹ã‚ã‘ã§ã¯ãªãã€ç”»åƒã¨ã—ã¦å¤§ãã•ã®å¤‰æ›´ã‚’ã™ã‚‹ã ã‘ã£ã½ã„ãƒ»ãƒ»ãƒ»ï¼Ÿ
+		[System.Windows.Controls.Canvas]::setLeft(		$eleViwFolder, $eleCanvas.ActualWidth	* 5 / 100 )
+		[System.Windows.Controls.Canvas]::setBottom(	$eleViwFolder, $eleCanvas.ActualWidth	* 5 / 100 )
+		$eleViwFolder.Width		= ($eleCanvas.ActualWidth	* 32 / 100 )
+		$eleViwFolder.Height	= ($eleCanvas.ActualHeight	* 25 / 100)
+
+		# é–‰ã˜ã‚‹ãƒœã‚¿ãƒ³
+		[System.Windows.Controls.Canvas]::setRight(		$eleViwClose, $eleCanvas.ActualWidth	* 5 / 100 )
+		[System.Windows.Controls.Canvas]::setBottom(	$eleViwClose, $eleCanvas.ActualWidth	* 5 / 100 )
+		$eleViwClose.Width		= ($eleCanvas.ActualWidth	* 32 / 100 )
+		$eleViwClose.Height		= ($eleCanvas.ActualHeight	* 25 / 100)
+	})
+
+	# Dialogè¡¨ç¤º (Dialogã®[é–‰ã˜ã‚‹]ãƒœã‚¿ãƒ³æŠ¼ä¸‹ã¾ã§å¸°ã£ã¦ã“ãªã„)
 	Write-Host "showDialog"
 	[void]$PictureWnd.showDialog()
 }

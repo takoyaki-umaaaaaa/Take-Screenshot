@@ -1,12 +1,12 @@
-# ŠÂ‹«İ’è
+ï»¿# ç’°å¢ƒè¨­å®š
 Set-StrictMode -Version 3.0
-$ErrorActionPreference = "stop"						# ƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚ÍƒXƒNƒŠƒvƒg‚ÌÀs‚ğ’â~
+$ErrorActionPreference = "stop"						# ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸå ´åˆã¯ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®å®Ÿè¡Œã‚’åœæ­¢
 
-. $PSScriptRoot\Utilities.ps1	# Œ^‚Ì’è‹`‚ª‚ ‚é‚½‚ßA“¯‚¶ƒXƒR[ƒv‚ÉŠÖ”‚ğæ‚è‚Ş
+. $PSScriptRoot\Utilities.ps1	# å‹ã®å®šç¾©ãŒã‚ã‚‹ãŸã‚ã€åŒã˜ã‚¹ã‚³ãƒ¼ãƒ—ã«é–¢æ•°ã‚’å–ã‚Šè¾¼ã‚€
 Add-Type -AssemblyName system.windows.forms
 Add-Type -AssemblyName PresentationFramework
 
-# g—p‚·‚éWin32 API‚ğ’è‹`
+# ä½¿ç”¨ã™ã‚‹Win32 APIã‚’å®šç¾©
 DefineWin32API
 
 
@@ -14,9 +14,9 @@ function dummyWindowXaml() {
 return @"
 	<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			Title="ƒ_ƒ~[ƒEƒBƒ“ƒhƒE" x:Name="basewindow" WindowStyle="None" SnapsToDevicePixels="True" ResizeMode="NoResize" 	Height="100" 	Width="100"	ShowInTaskbar = "False" FontFamily="UD Digi Kyokasho N-R" FontSize="18">
+			Title="ãƒ€ãƒŸãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦" x:Name="basewindow" WindowStyle="None" SnapsToDevicePixels="True" ResizeMode="NoResize" 	Height="100" 	Width="100"	ShowInTaskbar = "False" FontFamily="UD Digi Kyokasho N-R" FontSize="18">
 	<Grid Margin="0,0,0,0">
-		<Label		x:Name="lbl1"	Content="abcdef‚ ‚¢‚¤‚¦‚¨"	Margin=" 5,  5, 0,  0"	VerticalAlignment="Top"	 />
+		<Label		x:Name="lbl1"	Content="abcdefã‚ã„ã†ãˆãŠ"	Margin=" 5,  5, 0,  0"	VerticalAlignment="Top"	 />
 		<Button		x:Name="btn1"	Margin="  0, 20, 10,  0"	HorizontalAlignment="Right"	VerticalAlignment="Top"		Height="34" 	Width="54"		Background="White"		Cursor="Hand"	VerticalContentAlignment="Bottom" />
 	</Grid>
 	</Window>
@@ -28,7 +28,7 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 	[System.Xml.XmlNodeReader]$xamlReader = $xaml -as "System.Xml.XmlNodeReader"
 	[object]$wndObj = [Windows.Markup.XamlReader]::Load( $xamlReader )
 	
-	# Control element‚Ì object‚ğæ“¾
+	# Control elementã® objectã‚’å–å¾—
 	[object]$eleWnd = $wndObj.FindName( "basewindow" )
 	[object]$eleBtn = $wndObj.FindName( "btn1" )
 	
@@ -48,7 +48,7 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 		$VirtualScreen			= [Windows.Forms.SystemInformation]::VirtualScreen;			Write-Host "VirtualScreen   $VirtualScreen"
 		$WorkingArea			= [Windows.Forms.SystemInformation]::WorkingArea;			Write-Host "WorkingArea     $WorkingArea"
 
-		# ŒÄ‚Ño‚µŒ³‚É‰æ–Ê‰ğ‘œ“x‚ğ•Ô‚·
+		# å‘¼ã³å‡ºã—å…ƒã«ç”»é¢è§£åƒåº¦ã‚’è¿”ã™
 		$rcResolution.Value.left	= 0;
 		$rcResolution.Value.top		= 0;
 		$rcResolution.Value.right	= [Math]::Abs($rcWindow.right) - [Math]::Abs($rcWindow.left);
@@ -61,16 +61,16 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 	$eleWnd.Add_MouseRightButtonDown({ $eleWnd.Close() })
 
 	[object]$wih = New-Object System.Windows.Interop.WindowInteropHelper($wndObj)
-	$wih.Owner = $hPrentwnd;		# e‚ğİ’è
+	$wih.Owner = $hPrentwnd;		# è¦ªã‚’è¨­å®š
 
 	if( $false ){
-		# Dialog•\¦ (Dialog‚Ì[•Â‚¶‚é]ƒ{ƒ^ƒ“‰Ÿ‰º‚Ü‚Å‹A‚Á‚Ä‚±‚È‚¢)
+		# Dialogè¡¨ç¤º (Dialogã®[é–‰ã˜ã‚‹]ãƒœã‚¿ãƒ³æŠ¼ä¸‹ã¾ã§å¸°ã£ã¦ã“ãªã„)
 		[void]$wndObj.showDialog()
 
 		Write-Host "W=$($rcResolution) H=$($rcResolution)"
 	}
 	else {
-		$script:hwnd = $wih.EnsureHandle();	# Window‚ğ•\¦‚¹‚¸‚Éì¬‚·‚é
+		$script:hwnd = $wih.EnsureHandle();	# Windowã‚’è¡¨ç¤ºã›ãšã«ä½œæˆã™ã‚‹
 
 		Write-Host "`n---------- dummyWindow.psm1 --------------------------------------------"
 		Write-Host "`nhwndDummy = $hwnd"
@@ -85,7 +85,7 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 		$VirtualScreen			= [Windows.Forms.SystemInformation]::VirtualScreen;			Write-Host "VirtualScreen   $VirtualScreen"
 		$WorkingArea			= [Windows.Forms.SystemInformation]::WorkingArea;			Write-Host "WorkingArea     $WorkingArea"
 
-		# ŒÄ‚Ño‚µŒ³‚É‰æ–Ê‰ğ‘œ“x‚ğ•Ô‚·
+		# å‘¼ã³å‡ºã—å…ƒã«ç”»é¢è§£åƒåº¦ã‚’è¿”ã™
 		$rcResolution.Value.left	= 0;
 		$rcResolution.Value.top		= 0;
 		$rcResolution.Value.right	= [Math]::Abs($rcWindow.right)  - [Math]::Abs($rcWindow.left);

@@ -21,7 +21,7 @@ function DefineWin32API() {
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct POINTSTRUCT { 
+	public struct POINTSTRUCT {
 		public int x;
 		public int y;
 		public POINTSTRUCT(int x, int y) {
@@ -83,6 +83,14 @@ function DefineWin32API() {
 			[DllImport("user32.dll")]
 			[return: MarshalAs(UnmanagedType.Bool)]
 			public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+			[DllImport("user32.dll", SetLastError=true)]
+			[return: MarshalAs(UnmanagedType.Bool)]
+			public static extern bool ScreenToClient(IntPtr hwnd, [In, Out] POINTSTRUCT lpPoint);
+			[DllImport("user32.dll", SetLastError=true)]
+			[return: MarshalAs(UnmanagedType.Bool)]
+			public static extern bool ClientToScreen(IntPtr hwnd, [In, Out] POINTSTRUCT lpPoint);
+
 		}
 	}
 "@

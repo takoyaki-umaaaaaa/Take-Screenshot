@@ -54,12 +54,8 @@ function GetPictureWndXaml() {
 
 	<Canvas		x:Name="canvas1" Margin="10,10,10,10">
 		<Image	x:Name="image1"												Canvas.Top="0"		Canvas.Left="0"  Source="$ctrlPicture" Stretch="UniForm"/>
-		<Viewbox	x:Name="viwFolder"	Canvas.Bottom="20"	Canvas.Left="20"	Stretch="Fill">
-			<Button	x:Name="btnFolder"	Content="保存先の&#xD;&#xA;📁を開く"	Background="White"		Cursor="Hand"	VerticalContentAlignment="Center"  Opacity="0.3" FontSize="75"  />
-		</Viewbox>
-		<Viewbox	x:Name="viwClose"	Canvas.Bottom="20"	Canvas.Right="20"	Stretch="Fill">
-			<Button	x:Name="btnClose"	Content="閉じる"						Background="White"		Cursor="Hand"	VerticalContentAlignment="Center"  Opacity="0.3" FontSize="16"  />
-		</Viewbox>
+		<Button	x:Name="btnFolder"	Content=" 保存先&#xD;&#xA;📁を開く"	Canvas.Bottom="20"	Canvas.Left="20"	Background="White"		Cursor="Hand"	Opacity="0.3" FontSize="60"  />
+		<Button	x:Name="btnClose"	Content="閉じる"						Canvas.Bottom="20"	Canvas.Right="20"	Background="White"		Cursor="Hand"	Opacity="0.3" FontSize="60"  />
 	</Canvas>
 </Window>
 "@
@@ -81,6 +77,34 @@ function ShowPicture([string]$picFilePath) {
 	# Top Level windowが High DPI対応として動作する
 	$script:DpiAwareness = SetThreadDpiAwarenessContext(-1)
 
+	# Controlの再配置処理。Loaded直後にも呼びたいので変数に入れて使いまわす。
+	$func_relocateControls = {
+		# 画像は Canvasと同じ大きさ。
+		$elePic.Width = $eleCanvas.ActualWidth; $elePic.Height = $eleCanvas.ActualHeight;
+
+		# 📁を開くボタン
+		[System.Windows.Controls.Canvas]::setLeft(		$eleBtnFolder, $eleCanvas.ActualWidth	* 5 / 100 )
+		[System.Windows.Controls.Canvas]::setBottom(	$eleBtnFolder, $eleCanvas.ActualWidth	* 5 / 100 )
+		$eleBtnFolder.Width		= ($eleCanvas.ActualWidth	* 18 / 100 )
+		$eleBtnFolder.Height	= ($eleCanvas.ActualHeight	* 13 / 100 )
+
+		# 閉じるボタン
+		[System.Windows.Controls.Canvas]::setRight(		$eleBtnClose, $eleCanvas.ActualWidth	* 5 / 100 )
+		[System.Windows.Controls.Canvas]::setBottom(	$eleBtnClose, $eleCanvas.ActualWidth	* 5 / 100 )
+		$eleBtnClose.Width		= ($eleCanvas.ActualWidth	* 18 / 100 )
+		$eleBtnClose.Height		= ($eleCanvas.ActualHeight	* 13 / 100 )
+
+		# ボタンの Font size変更
+		# 幅:362, 高さ:146 のとき、Font size:55 がいい感じ
+		[double]$ratio_w = $eleBtnFolder.ActualWidth  / 362
+		[double]$ratio_h = $eleBtnFolder.ActualHeight / 146
+		[double]$ratio_font = [Math]::Min($ratio_w, $ratio_h) * 55
+		$eleBtnFolder.fontSize	= $ratio_font
+		$eleBtnClose.fontSize	= $ratio_font
+	}
+
+
+	# 画像の "src=" を設定
 	$ctrlPicture = $picFilePath
 
 	[xml]$xaml = GetPictureWndXaml
@@ -92,18 +116,17 @@ function ShowPicture([string]$picFilePath) {
 	[object]$elePic			= $PictureWnd.FindName( "image1" )
 	[object]$eleBtnFolder	= $PictureWnd.FindName( "btnFolder" )
 	[object]$eleBtnClose	= $PictureWnd.FindName( "btnClose" )
-	[object]$eleViwFolder	= $PictureWnd.FindName( "viwFolder" )
-	[object]$eleViwClose	= $PictureWnd.FindName( "viwClose" )
 
 	# Event handler登録
 #	$eleWnd.Add_MouseLeftButtonDown({ param($sender, $e); $e | Get-Member | Write-Host; $eleWnd.DragMove(); })
 	$eleWnd.Add_MouseLeftButtonDown({ $eleWnd.DragMove() })
 	$eleWnd.Add_MouseRightButtonDown({ $PictureWnd.Close() })
-
 	$eleWnd.Add_Loaded({
 		try {
 			Write-Host "Window Loaded"
+			$script:hwndPic = (New-Object System.Windows.Interop.WindowInteropHelper($this)).Handle
 			$fileInfo = [System.Drawing.Image]::FromFile($picFilePath)
+			Write-Host "$script:hwndPic = $($script:hwndPic)"
 
 			[double]$scale = GetDisplayScaleValue
 			[double]$size = 0.1		# 画像を一割縮小して中央寄せで表示する
@@ -115,31 +138,46 @@ function ShowPicture([string]$picFilePath) {
 			$eleWnd.Height	= $fileInfo.Height * (1 - $size) / $scale
 			Write-Host "eleWnd = W=$($eleWnd.Width), H=$($eleWnd.Height)"
 			Write-Host "$fileInfo.Width * $size / 2 / $scale"
+
+			&$func_relocateControls
 		}
 		catch {
 			$Error[0] | Select-Object -Property * | Write-Host
 		}
 	})
+	$eleWnd.Add_MouseMove({
+		param($sender, $e)
+		$pt = $e.GetPosition($this)
+#		Write-Host "$($script:hwndPic)   $($pt.x)   $($pt.y)"
 
-	$eleCanvas.Add_SizeChanged({
-		# Controlの再配置。
-		# 画像は Canvasと同じ大きさ。
-		$elePic.Width = $eleCanvas.ActualWidth; $elePic.Height = $eleCanvas.ActualHeight;
+		$distwnd = ($eleWnd.ActualWidth * $eleWnd.ActualWidth + $eleWnd.ActualHeight * $eleWnd.ActualHeight) / 8
 
-		# 📁を開くボタン
-		# ViewBoxは Canvas上では自動で拡大縮小しないっぽいが、手動で変えれば内容は自動で変えてくれる
-		# ただ、Font sizeを計算するわけではなく、画像として大きさの変更をするだけっぽい・・・？
-		[System.Windows.Controls.Canvas]::setLeft(		$eleViwFolder, $eleCanvas.ActualWidth	* 5 / 100 )
-		[System.Windows.Controls.Canvas]::setBottom(	$eleViwFolder, $eleCanvas.ActualWidth	* 5 / 100 )
-		$eleViwFolder.Width		= ($eleCanvas.ActualWidth	* 32 / 100 )
-		$eleViwFolder.Height	= ($eleCanvas.ActualHeight	* 25 / 100)
+		# カーソルと対象ボタンの距離計算
+		$btnCenter = New-Object System.Drawing.Point(0, 0)
+		$btnCenter.x = 							  [System.Windows.Controls.Canvas]::getLeft($eleBtnFolder)    + $eleBtnFolder.ActualWidth  / 2
+		$btnCenter.y = ($eleCanvas.ActualHeight - [System.Windows.Controls.Canvas]::getBottom($eleBtnFolder)) - $eleBtnFolder.ActualHeight / 2
+#		Write-Host "$($script:hwndPic)   $($btnCenter.x)   $($btnCenter.y)"
+		
+		$currentDist = New-Object System.Drawing.Point(0, 0)
+		$currentDist.x = [Math]::Abs($pt.x - $btnCenter.x)
+		$currentDist.x *= $currentDist.x
+		$currentDist.y = [Math]::Abs($pt.y - $btnCenter.y)
+		$currentDist.y *= $currentDist.y
 
-		# 閉じるボタン
-		[System.Windows.Controls.Canvas]::setRight(		$eleViwClose, $eleCanvas.ActualWidth	* 5 / 100 )
-		[System.Windows.Controls.Canvas]::setBottom(	$eleViwClose, $eleCanvas.ActualWidth	* 5 / 100 )
-		$eleViwClose.Width		= ($eleCanvas.ActualWidth	* 32 / 100 )
-		$eleViwClose.Height		= ($eleCanvas.ActualHeight	* 25 / 100)
+		$distanceCurrent = $currentDist.x + $currentDist.y
+		$Opacity = $distanceCurrent / $distwnd
+		if( $Opacity -le 1 ){ $eleBtnFolder.Opacity = 1 - $Opacity }
+		else				{ $eleBtnFolder.Opacity = 0 }
+#		Write-Host "$($eleBtnFolder.Opacity)   $distanceCurrent   $($distwnd)"
+
+
+		$aaa=[System.Windows.Controls.Canvas]::getLeft($eleBtnFolder)
+#		Write-Host "$($aaa)   $($btnCenter.x)   $distanceCurrent"
+			
 	})
+	$eleWnd.Add_MouseLeave({ $eleBtnFolder.Opacity = 0; $eleBtnClose.Opacity = 0 })
+	$eleCanvas.Add_SizeChanged( $func_relocateControls )
+
 
 	# Dialog表示 (Dialogの[閉じる]ボタン押下まで帰ってこない)
 	Write-Host "showDialog"

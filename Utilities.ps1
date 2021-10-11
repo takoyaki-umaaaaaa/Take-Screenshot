@@ -91,6 +91,8 @@ function DefineWin32API() {
 			[return: MarshalAs(UnmanagedType.Bool)]
 			public static extern bool ClientToScreen(IntPtr hwnd, [In, Out] POINTSTRUCT lpPoint);
 
+			[DllImport("Kernel32.dll", SetLastError=true)]
+			public static extern IntPtr GetConsoleWindow();
 		}
 	}
 "@
@@ -161,6 +163,18 @@ function askToSelectSaveFolder([string]$path)
 }
 
 
+# まさかのPoint struct型が標準で定義されていたなんて・・・
+function calcDistance([System.Windows.Point]$pt1, [System.Drawing.Point]$pt2){
+	$dist = New-Object System.Drawing.Point(0, 0)
+	$dist.x = [Math]::Abs($pt1.x - $pt2.x)
+	$dist.x *= $dist.x
+	$dist.y = [Math]::Abs($pt1.y - $pt2.y)
+	$dist.y *= $dist.y
+	
+	$ret = $dist.x + $dist.y
+	# 一律√計算はせずに使う
+	return $ret
+}
 
 
 

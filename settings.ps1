@@ -46,9 +46,9 @@ $baseWnd = $SettingWnd.FindName( "baseWindow" )
 $global:Controls[2].Element.Text = $saveFolder
 
 # Event handler登録
-$global:Controls[3].Element.add_Click({$ret = askToSelectSaveFolder $global:Controls[2].Element.Text; $global:Controls[2].Element.Text = $ret})		# 保存先指定Dialogを開くボタン
-$global:Controls[4].Element.add_Click({[Environment]::SetEnvironmentVariable( "Take-Screenshot", $null, [System.EnvironmentVariableTarget]::User );  $global:Controls[2].Element.Text = $null})	# 環境変数を削除するボタン
-$global:Controls[8].Element.add_Click({$SettingWnd.Close()})		# [閉じる]ボタン
+$global:Controls[3].Element.Add_Click({$ret = askToSelectSaveFolder $global:Controls[2].Element.Text; $global:Controls[2].Element.Text = $ret})		# 保存先指定Dialogを開くボタン
+$global:Controls[4].Element.Add_Click({[Environment]::SetEnvironmentVariable( "Take-Screenshot", $null, [System.EnvironmentVariableTarget]::User );  $global:Controls[2].Element.Text = $null})	# 環境変数を削除するボタン
+$global:Controls[8].Element.Add_Click({$SettingWnd.Close()})		# [閉じる]ボタン
 
 $baseWnd.add_Loaded({
 	$script:hwndSetting = (New-Object System.Windows.Interop.WindowInteropHelper($this)).Handle

@@ -23,7 +23,7 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = "stop"						# エラーが発生した場合はスクリプトの実行を停止
 $PSDefaultParameterValues['out-file:width'] = 2000	# Script実行中は1行あたり2000文字設定
 
-Add-Type -AssemblyName system.windows.forms
+Add-Type -AssemblyName System.Windows.Forms
 # 少しだけ今どきの Control表示にする
 [System.Windows.Forms.Application]::EnableVisualStyles()
 [System.Windows.Forms.Application]::VisualStyleState = 3
@@ -36,23 +36,29 @@ Write-Host -ForegroundColor Yellow "`n---- $SCRIPT_NAME   version $SCRIPT_VERSIO
 # 使用するWin32 APIを定義
 DefineWin32API
 
+[IntPtr]$hConsoleWnd = [Win32.NativeAPIs]::GetConsoleWindow()
+Write-Host "Console hwnd = $hConsoleWnd"
+
+
 # Window作成前に呼ぶことで、これ以降にこのScriptで作られる
 # Top Level windowが High DPI対応として動作する
 # ここでは、画面解像度値取得のために設定している
 $script:DpiAwareness = SetThreadDpiAwarenessContext(-4)
+# 画面用設定を反映させるため、dummy window を作成し、すぐに破棄する
+displayDummyWindow -hParentwnd $hConsoleWnd
 
 # 全モニタの数と解像度を保持しておく
 [object]$Screens = [System.Windows.Forms.Screen]::AllScreens
 Write-Host "$Screens"
 
-if( $Screens.Length -gt ($targetDisplayNumber + 1)){
-	[string]$errstr = "Screenshot取得先の画面番号指定が誤っています。`n接続されている画面は$($Screens.Length)のため、`n0 ～ $($Screens.Length) の範囲で指定してください。"
-	[System.Windows.Forms.MessageBox]::Show($errstr)
+if( $targetDisplayNumber -ge $Screens.Length  ){
+	[string]$errstr = "Screenshot取得先の画面番号指定(指定=$targetDisplayNumber)が誤っています。`n接続されている画面は$($Screens.Length)のため、`n0 ～ ($($Screens.Length)-1) の範囲で指定してください。"
+	[System.Windows.Forms.MessageBox]::Show($errstr, "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Stop)
 	Write-Host -ForegroundColor Red "$errstr"
 	exit -1
 }
 
-# Display Scaling Value 取得
+# Display Scaling Value を得るために child windowを作る
 [RECT]$rcResolution_Scale	= New-Object RECT
 [RECT]$rcResolution_Pixcel	= New-Object RECT
 [RECT]$rcWorkarea_Scale		= New-Object RECT
@@ -68,9 +74,8 @@ Write-Host "$($rcResolution_Scale.right)  $($rcResolution_Scale.bottom)"
 Write-Host "$($rcResolution_Pixcel.right)  $($rcResolution_Scale.bottom)"
 
 [double]$scale = ($rcResolution_Pixcel.right) / $rcResolution_Scale.right
-Write-Host "`n画面の拡大率は $scale %です。"
-
-SetDisplayScaleValue( $scale )
+Write-Host -ForegroundColor Yellow "`n画面の拡大率は $scale %です。"
+SetDisplayScaleValue( $scale )			# 拡大率を保持
 
 # 保存先が未設定であれば、保存先フォルダ選択ダイアログで選択してもらう
 if( [string]::IsNullOrEmpty($outputDirectory) ){

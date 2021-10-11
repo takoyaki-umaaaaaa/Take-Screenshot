@@ -10,41 +10,12 @@ $PSDefaultParameterValues['out-file:width'] = 2000	# Script実行中は1行あ�
 
 
 
-function GetDisplayScaling([IntPtr]$hParentWnd) {
-	Write-Host "`nGetDisplayScaling"
-	Import-Module -Name $PSScriptRoot\dummyWindow.psm1
-	Add-Type -TypeDefinition @"
-	using System.Runtime.InteropServices;
-	[StructLayout(LayoutKind.Sequential)]
-	public struct RECT {
-		public int left;
-		public int top;
-		public int right;
-		public int bottom;
-	}
-"@
-
-	# Low DPI window と High DPI window を maximizeで作成し、
-	# 取得した座標値から Display scalingを出す。
-	
-	# Low DPI window
-	[IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-1)
-	[RECT]$rectLowDpi = displayDummyWindow $hParentWnd
-
-	# High DPI window
-	[IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-4)
-	[Rect]$rectHighDpi = displayDummyWindow $hParentWnd
-
-	SetThreadDpiAwarenessContext($script:DpiOldSetting)
-
-}
-
 
 function GetPictureWndXaml() {
 	return @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		Title="先ほど撮ったScreenshot画像を表示" x:Name="basewindow" WindowStyle="ThreeDBorderWindow" Background="Black" SnapsToDevicePixels="True" ResizeMode="CanResizeWithGrip" ShowInTaskbar = "True" FontFamily="UD Digi Kyokasho N-R" FontSize="18" Icon="$res_icon">
+		Title="先ほど撮ったScreenshot画像を表示" x:Name="basewindow" WindowStyle="ThreeDBorderWindow" Background="Black" SnapsToDevicePixels="True" ResizeMode="CanResizeWithGrip" ShowInTaskbar = "True" FontFamily="游明朝" FontSize="18" Icon="$res_icon">
 	<WindowChrome.WindowChrome>
 		<WindowChrome GlassFrameThickness="0" ResizeBorderThickness="10" CornerRadius="0" CaptionHeight="0" UseAeroCaptionButtons="True"/>
 	</WindowChrome.WindowChrome>
@@ -53,9 +24,9 @@ function GetPictureWndXaml() {
 	</Window.TaskbarItemInfo>
 
 	<Canvas		x:Name="canvas1" Margin="10,10,10,10">
-		<Image	x:Name="image1"												Canvas.Top="0"		Canvas.Left="0"  Source="$ctrlPicture" Stretch="UniForm"/>
-		<Button	x:Name="btnFolder"	Content=" 保存先&#xD;&#xA;📁を開く"	Canvas.Bottom="20"	Canvas.Left="20"	Background="White"		Cursor="Hand"	Opacity="0.3" FontSize="60"  />
-		<Button	x:Name="btnClose"	Content="閉じる"						Canvas.Bottom="20"	Canvas.Right="20"	Background="White"		Cursor="Hand"	Opacity="0.3" FontSize="60"  />
+		<Image	x:Name="image1"														Canvas.Top="0"		Canvas.Left="0"  Source="$ctrlPicture" Stretch="UniForm"/>
+		<Button	x:Name="btnFolder"	Content=" 保存先&#xD;&#xA;📁を開く"			Canvas.Bottom="20"	Canvas.Left="20"	Background="White"		Cursor="Hand"	Opacity="0.3" FontSize="60"  />
+		<Button	x:Name="btnClose"	Content="閉じる"									Canvas.Bottom="20"	Canvas.Right="20"	Background="White"		Cursor="Hand"	Opacity="0.3" FontSize="60"  />
 	</Canvas>
 </Window>
 "@
@@ -75,11 +46,11 @@ function ShowPicture([string]$picFilePath) {
 
 	# Window作成前に呼ぶことで、これ以降にこのScriptで作られる
 	# Top Level windowが High DPI対応として動作する
-	$script:DpiAwareness = SetThreadDpiAwarenessContext(-1)
+	$script:DpiAwareness = SetThreadDpiAwarenessContext(-4)
 
 	# Controlの再配置処理。Loaded直後にも呼びたいので変数に入れて使いまわす。
 	$func_relocateControls = {
-		# 画像は Canvasと同じ大きさ。
+		# Picture controlは Canvasと同じ大きさ。
 		$elePic.Width = $eleCanvas.ActualWidth; $elePic.Height = $eleCanvas.ActualHeight;
 
 		# 📁を開くボタン
@@ -95,9 +66,9 @@ function ShowPicture([string]$picFilePath) {
 		$eleBtnClose.Height		= ($eleCanvas.ActualHeight	* 13 / 100 )
 
 		# ボタンの Font size変更
-		# 幅:362, 高さ:146 のとき、Font size:55 がいい感じ
+		# 幅:362, 高さ:200 のとき、Font size:55 がいい感じ
 		[double]$ratio_w = $eleBtnFolder.ActualWidth  / 362
-		[double]$ratio_h = $eleBtnFolder.ActualHeight / 146
+		[double]$ratio_h = $eleBtnFolder.ActualHeight / 200
 		[double]$ratio_font = [Math]::Min($ratio_w, $ratio_h) * 55
 		$eleBtnFolder.fontSize	= $ratio_font
 		$eleBtnClose.fontSize	= $ratio_font
@@ -148,35 +119,36 @@ function ShowPicture([string]$picFilePath) {
 	$eleWnd.Add_MouseMove({
 		param($sender, $e)
 		$pt = $e.GetPosition($this)
-#		Write-Host "$($script:hwndPic)   $($pt.x)   $($pt.y)"
 
+		# Windowの対角線を距離の基準にする。ある程度近づいてから表示したいので、適当に÷8
 		$distwnd = ($eleWnd.ActualWidth * $eleWnd.ActualWidth + $eleWnd.ActualHeight * $eleWnd.ActualHeight) / 8
 
-		# カーソルと対象ボタンの距離計算
+		# カーソルと対象ボタンの距離計算(📁を開くボタン)
 		$btnCenter = New-Object System.Drawing.Point(0, 0)
 		$btnCenter.x = 							  [System.Windows.Controls.Canvas]::getLeft($eleBtnFolder)    + $eleBtnFolder.ActualWidth  / 2
 		$btnCenter.y = ($eleCanvas.ActualHeight - [System.Windows.Controls.Canvas]::getBottom($eleBtnFolder)) - $eleBtnFolder.ActualHeight / 2
-#		Write-Host "$($script:hwndPic)   $($btnCenter.x)   $($btnCenter.y)"
-		
-		$currentDist = New-Object System.Drawing.Point(0, 0)
-		$currentDist.x = [Math]::Abs($pt.x - $btnCenter.x)
-		$currentDist.x *= $currentDist.x
-		$currentDist.y = [Math]::Abs($pt.y - $btnCenter.y)
-		$currentDist.y *= $currentDist.y
 
-		$distanceCurrent = $currentDist.x + $currentDist.y
-		$Opacity = $distanceCurrent / $distwnd
+		# カーソル☜☞ボタン間の距離を測り、透明度を設定(📁を開くボタン)
+		$distanceCurrent = calcDistance $pt $btnCenter
+		$Opacity = $distanceCurrent / $distwnd			# Windowの対角線基準で透明度を出す
 		if( $Opacity -le 1 ){ $eleBtnFolder.Opacity = 1 - $Opacity }
 		else				{ $eleBtnFolder.Opacity = 0 }
-#		Write-Host "$($eleBtnFolder.Opacity)   $distanceCurrent   $($distwnd)"
 
 
-		$aaa=[System.Windows.Controls.Canvas]::getLeft($eleBtnFolder)
-#		Write-Host "$($aaa)   $($btnCenter.x)   $distanceCurrent"
-			
+		# カーソルと対象ボタンの距離計算(閉じるボタン)
+		$btnCenter.x = ($eleCanvas.ActualWidth  - [System.Windows.Controls.Canvas]::getRight($eleBtnClose))  - $eleBtnClose.ActualWidth  / 2
+		$btnCenter.y = ($eleCanvas.ActualHeight - [System.Windows.Controls.Canvas]::getBottom($eleBtnClose)) - $eleBtnClose.ActualHeight / 2
+
+		# カーソル☜☞ボタン間の距離を測り、透明度を設定(閉じるボタン)
+		$distanceCurrent = calcDistance $pt $btnCenter
+		$Opacity = $distanceCurrent / $distwnd			# Windowの対角線基準で透明度を出す
+		if( $Opacity -le 1 ){ $eleBtnClose.Opacity = 1 - $Opacity }
+		else				{ $eleBtnClose.Opacity = 0 }
 	})
 	$eleWnd.Add_MouseLeave({ $eleBtnFolder.Opacity = 0; $eleBtnClose.Opacity = 0 })
 	$eleCanvas.Add_SizeChanged( $func_relocateControls )
+	$eleBtnFolder.Add_Click({ $folder = Split-Path $picFilePath -Parent; Invoke-Item ([IO.FileInfo]$folder) })
+	$eleBtnClose.Add_Click({ $PictureWnd.Close() })
 
 
 	# Dialog表示 (Dialogの[閉じる]ボタン押下まで帰ってこない)

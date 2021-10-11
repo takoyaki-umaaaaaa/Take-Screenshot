@@ -23,11 +23,11 @@ return @"
 "@
 }
 
-function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWorkarea) {
+function displayDummyWindow([IntPtr]$hParentwnd, [ref]$rcResolution, [ref]$rcWorkarea, [boolean]$display=$false) {
 	[xml]$xaml = dummyWindowXaml
 	[System.Xml.XmlNodeReader]$xamlReader = $xaml -as "System.Xml.XmlNodeReader"
 	[object]$wndObj = [Windows.Markup.XamlReader]::Load( $xamlReader )
-	
+
 	# Control elementの objectを取得
 	[object]$eleWnd = $wndObj.FindName( "basewindow" )
 	[object]$eleBtn = $wndObj.FindName( "btn1" )
@@ -49,11 +49,13 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 		$WorkingArea			= [Windows.Forms.SystemInformation]::WorkingArea;			Write-Host "WorkingArea     $WorkingArea"
 
 		# 呼び出し元に画面解像度を返す
-		$rcResolution.Value.left	= 0;
-		$rcResolution.Value.top		= 0;
-		$rcResolution.Value.right	= [Math]::Abs($rcWindow.right) - [Math]::Abs($rcWindow.left);
-		$rcResolution.Value.bottom	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
-		Write-Host "**** return value W=$($rcResolution.Value.right) H=$($rcResolution.Value.bottom) ****"
+		if( $null -ne $rcResolution ){
+			$rcResolution.Value.left	= 0;
+			$rcResolution.Value.top		= 0;
+			$rcResolution.Value.right	= [Math]::Abs($rcWindow.right) - [Math]::Abs($rcWindow.left);
+			$rcResolution.Value.bottom	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
+			Write-Host "**** return value W=$($rcResolution.Value.right) H=$($rcResolution.Value.bottom) ****"
+		}
 	})
 
 	$eleBtn.add_Click({ $eleWnd.Close() })
@@ -61,13 +63,16 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 	$eleWnd.Add_MouseRightButtonDown({ $eleWnd.Close() })
 
 	[object]$wih = New-Object System.Windows.Interop.WindowInteropHelper($wndObj)
-	$wih.Owner = $hPrentwnd;		# 親を設定
+	if( 0 -ne $hParentwnd ){	$wih.Owner = $hParentwnd	}
+	else {						$wih.Owner = [IntPtr]::Zero	}
 
-	if( $false ){
+	if( $display ){
 		# Dialog表示 (Dialogの[閉じる]ボタン押下まで帰ってこない)
 		[void]$wndObj.showDialog()
 
-		Write-Host "W=$($rcResolution) H=$($rcResolution)"
+		if( $null -ne $rcResolution ){
+			Write-Host "W=$($rcResolution) H=$($rcResolution)"
+		}
 	}
 	else {
 		$script:hwnd = $wih.EnsureHandle();	# Windowを表示せずに作成する
@@ -86,11 +91,13 @@ function displayDummyWindow([IntPtr] $hPrentwnd, [ref]$rcResolution, [ref]$rcWor
 		$WorkingArea			= [Windows.Forms.SystemInformation]::WorkingArea;			Write-Host "WorkingArea     $WorkingArea"
 
 		# 呼び出し元に画面解像度を返す
-		$rcResolution.Value.left	= 0;
-		$rcResolution.Value.top		= 0;
-		$rcResolution.Value.right	= [Math]::Abs($rcWindow.right)  - [Math]::Abs($rcWindow.left);
-		$rcResolution.Value.bottom	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
-		Write-Host "**** return value W=$($rcResolution.Value.right) H=$($rcResolution.Value.bottom) ****"
+		if( $null -ne $rcResolution ){
+			$rcResolution.Value.left	= 0;
+			$rcResolution.Value.top		= 0;
+			$rcResolution.Value.right	= [Math]::Abs($rcWindow.right)  - [Math]::Abs($rcWindow.left);
+			$rcResolution.Value.bottom	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
+			Write-Host "**** return value W=$($rcResolution.Value.right) H=$($rcResolution.Value.bottom) ****"
+		}
 	}
 }
 

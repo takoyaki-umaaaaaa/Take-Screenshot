@@ -23,7 +23,8 @@ return @"
 "@
 }
 
-function displayDummyWindow([IntPtr]$hParentwnd, [ref]$rcResolution, [ref]$rcWorkarea, [boolean]$display=$false) {
+# $resolution, $workareaは System.Draw.Point型。幅高さを返す
+function displayDummyWindow([IntPtr]$hParentwnd=[IntPtr]::Zero, [ref]$resolution, [ref]$workarea, [boolean]$display=$false) {
 	[xml]$xaml = dummyWindowXaml
 	[System.Xml.XmlNodeReader]$xamlReader = $xaml -as "System.Xml.XmlNodeReader"
 	[object]$wndObj = [Windows.Markup.XamlReader]::Load( $xamlReader )
@@ -49,12 +50,10 @@ function displayDummyWindow([IntPtr]$hParentwnd, [ref]$rcResolution, [ref]$rcWor
 		$WorkingArea			= [Windows.Forms.SystemInformation]::WorkingArea;			Write-Host "WorkingArea     $WorkingArea"
 
 		# 呼び出し元に画面解像度を返す
-		if( $null -ne $rcResolution ){
-			$rcResolution.Value.left	= 0;
-			$rcResolution.Value.top		= 0;
-			$rcResolution.Value.right	= [Math]::Abs($rcWindow.right) - [Math]::Abs($rcWindow.left);
-			$rcResolution.Value.bottom	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
-			Write-Host "**** return value W=$($rcResolution.Value.right) H=$($rcResolution.Value.bottom) ****"
+		if( $null -ne $resolution ){
+			$resolution.Value.x	= [Math]::Abs($rcWindow.right) - [Math]::Abs($rcWindow.left);
+			$resolution.Value.y	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
+			Write-Host "**** return value W=$($resolution.Value.x) H=$($resolution.Value.y) ****"
 		}
 	})
 
@@ -70,8 +69,8 @@ function displayDummyWindow([IntPtr]$hParentwnd, [ref]$rcResolution, [ref]$rcWor
 		# Dialog表示 (Dialogの[閉じる]ボタン押下まで帰ってこない)
 		[void]$wndObj.showDialog()
 
-		if( $null -ne $rcResolution ){
-			Write-Host "W=$($rcResolution) H=$($rcResolution)"
+		if( $null -ne $resolution ){
+			Write-Host "W=$($resolution) H=$($resolution)"
 		}
 	}
 	else {
@@ -91,12 +90,10 @@ function displayDummyWindow([IntPtr]$hParentwnd, [ref]$rcResolution, [ref]$rcWor
 		$WorkingArea			= [Windows.Forms.SystemInformation]::WorkingArea;			Write-Host "WorkingArea     $WorkingArea"
 
 		# 呼び出し元に画面解像度を返す
-		if( $null -ne $rcResolution ){
-			$rcResolution.Value.left	= 0;
-			$rcResolution.Value.top		= 0;
-			$rcResolution.Value.right	= [Math]::Abs($rcWindow.right)  - [Math]::Abs($rcWindow.left);
-			$rcResolution.Value.bottom	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
-			Write-Host "**** return value W=$($rcResolution.Value.right) H=$($rcResolution.Value.bottom) ****"
+		if( $null -ne $resolution ){
+			$resolution.Value.x	= [Math]::Abs($rcWindow.right)  - [Math]::Abs($rcWindow.left);
+			$resolution.Value.y	= [Math]::Abs($rcWindow.bottom) - [Math]::Abs($rcWindow.top);
+			Write-Host "**** return value W=$($resolution.Value.x) H=$($resolution.Value.y) ****"
 		}
 	}
 }

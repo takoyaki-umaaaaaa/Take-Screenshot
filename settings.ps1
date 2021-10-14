@@ -24,6 +24,9 @@ Add-Type -AssemblyName system.windows.forms
 # Top Level windowが High DPI対応として動作する
 $script:DpiAwareness = SetThreadDpiAwarenessContext(-4)
 
+# 設定情報を読み込む
+Setting_Load
+
 # 設定dialogを読み込み
 Import-Module -Name $PSScriptRoot\SettingWindow.psm1
 #[xml]$xaml = Get-Content ($PSScriptRoot + "\SettingWindow.xaml")
@@ -42,13 +45,21 @@ foreach( $ctl in $global:Controls ){
 $baseWnd = $SettingWnd.FindName( "baseWindow" )
 
 # 保存先フォルダの設定状態を表示
-[string]$saveFolder = [Environment]::GetEnvironmentVariable( "Take-Screenshot", [System.EnvironmentVariableTarget]::User )
+[string]$saveFolder = Setting_GetImageSaveFolder
 $global:Controls[2].Element.Text = $saveFolder
+# 保存後に画像を表示
+[boolean]$displayImage = Setting_GetOption_DisplaySavedPicture
+$global:Controls[5].Element.IsChecked = $displayImage
 
 # Event handler登録
-$global:Controls[3].Element.Add_Click({$ret = askToSelectSaveFolder $global:Controls[2].Element.Text; $global:Controls[2].Element.Text = $ret})		# 保存先指定Dialogを開くボタン
-$global:Controls[4].Element.Add_Click({[Environment]::SetEnvironmentVariable( "Take-Screenshot", $null, [System.EnvironmentVariableTarget]::User );  $global:Controls[2].Element.Text = $null})	# 環境変数を削除するボタン
-$global:Controls[8].Element.Add_Click({$SettingWnd.Close()})		# [閉じる]ボタン
+$global:Controls[3].Element.Add_Click({$ret = askToSelectSaveFolder $global:Controls[2].Element.Text; Setting_SetImageSaveFolder $ret; $global:Controls[2].Element.Text = $ret})		# 保存先指定Dialogを開くボタン
+$global:Controls[4].Element.Add_Click({Setting_SetImageSaveFolder "";  $global:Controls[2].Element.Text = $null})	# 保存先設定を削除するボタン
+$global:Controls[8].Element.Add_Click({
+	# [閉じる]ボタン
+	Setting_SetOption_DisplaySavedPicture $global:Controls[5].Element.IsChecked
+	Setting_Save
+	$SettingWnd.Close()
+})
 
 $baseWnd.add_Loaded({
 	$script:hwndSetting = (New-Object System.Windows.Interop.WindowInteropHelper($this)).Handle

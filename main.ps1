@@ -58,22 +58,22 @@ if( $targetDisplayNumber -ge $Screens.Length  ){
 	exit -1
 }
 
-# Display Scaling Value を得るために child windowを作る
-[RECT]$rcResolution_Scale	= New-Object RECT
-[RECT]$rcResolution_Pixcel	= New-Object RECT
-[RECT]$rcWorkarea_Scale		= New-Object RECT
-[RECT]$rcWorkarea_Pixcel	= New-Object RECT
+# Display Scaling Value を得るために child windowを作る(RectでなくPointなのは、幅高さをもらうため)
+$Resolution_Scale	= New-Object System.Windows.Point
+$Resolution_Pixcel	= New-Object System.Windows.Point
+$rcWorkarea_Scale		= New-Object System.Windows.Point
+$rcWorkarea_Pixcel	= New-Object System.Windows.Point
 
 [IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-1)
-displayDummyWindow 0 ([ref]$rcResolution_Scale) ([ref]$rcWorkarea_Scale)
+displayDummyWindow 0 ([ref]$Resolution_Scale) ([ref]$rcWorkarea_Scale)
 
 [IntPtr]$script:DpiOldSetting = SetThreadDpiAwarenessContext(-4)
-displayDummyWindow 0 ([ref]$rcResolution_Pixcel) ([ref]$rcWorkarea_Pixcel)
+displayDummyWindow 0 ([ref]$Resolution_Pixcel) ([ref]$rcWorkarea_Pixcel)
 
-Write-Host "$($rcResolution_Scale.right)  $($rcResolution_Scale.bottom)"
-Write-Host "$($rcResolution_Pixcel.right)  $($rcResolution_Scale.bottom)"
+Write-Host "$($Resolution_Scale.x)  $($Resolution_Scale.y)"
+Write-Host "$($Resolution_Pixcel.x)  $($Resolution_Pixcel.y)"
 
-[double]$scale = ($rcResolution_Pixcel.right) / $rcResolution_Scale.right
+[double]$scale = ($Resolution_Pixcel.x) / $Resolution_Scale.x
 Write-Host -ForegroundColor Yellow "`n画面の拡大率は $scale %です。"
 SetDisplayScaleValue( $scale )			# 拡大率を保持
 

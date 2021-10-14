@@ -151,12 +151,9 @@ function askToSelectSaveFolder([string]$path)
 	# フォルダ選択ダイアログを表示
 	[System.Windows.Forms.DialogResult]$result = $fbDlg.ShowDialog()
 	if( $result -eq [System.Windows.Forms.DialogResult]::Cancel ){
-		# 未設定で呼び出された場合、未設定を返す必要がある
+		# 保存先未設定で呼び出された場合、Cancel押下で呼び出し元に未設定を返す必要がある
 		# 存在しないパスを指定されていても、Cancel選択時はそのままで返す
 		$fbDlg.SelectedPath = $path
-	}
-	else {
-		[Environment]::SetEnvironmentVariable( $global:ENV_SAVEFOLDER, "$($fbDlg.SelectedPath)", [System.EnvironmentVariableTarget]::User )
 	}
 
 	return $fbDlg.SelectedPath
@@ -254,3 +251,65 @@ function TakeScreenshot(
 		return $destFilePath
 	}
 }
+
+# 設定関係。別ファイルにするかも =================================
+
+# 設定情報保持object。ひとまずDefault設定で作成しておく。
+[PSCustomObject]$script:Settings = [PSCustomObject]@{
+	"ImageSaveDestination"			= ""
+	"PreviewImageAfterSaving"		= "Yes"
+	"DisplayButtonOnPreviewImage"	= "Yes"
+}
+# 設定保持object作成
+function Setting_GetSettingInfoFilePath(){
+	$settingfilepath = Join-Path "$PSScriptRoot" ".\Settings.json"
+	return $settingfilepath
+}
+function Setting_Load(){
+	# ファイルの存在チェック
+	$filepath = Setting_GetSettingInfoFilePath
+	if( -not (Test-Path $filepath -PathType leaf) ){
+		# 設定ファイルなしのため default設定とする
+		Write-Host -ForegroundColor Yellow "設定ファイルが見つからないためデフォルト設定にします"
+		
+		# Default設定で設定ファイルを作成
+		Setting_Save
+	}
+	else {
+		# 読み込み
+		$script:Settings = Get-Content $filepath -Encoding UTF8 -Raw | ConvertFrom-Json
+	}
+	
+}
+function Setting_Save(){
+	$filepath = Setting_GetSettingInfoFilePath
+	$script:Settings | ConvertTo-Json | Out-File -Encoding UTF8 -FilePath $filepath
+}
+
+# Screenshotの保存先パスを取得
+function Setting_GetImageSaveFolder(){
+	return $script:Settings.ImageSaveDestination
+}
+# Screenshotの保存先パスを設定
+function Setting_SetImageSaveFolder([string]$path){
+	$script:Settings.ImageSaveDestination = $path
+}
+
+# Screenshotを保存後に表示するかどうかの設定情報
+function Setting_GetOption_DisplaySavedPicture(){
+	[boolean]$ret = $false
+	if( "Yes" -eq $script:Settings.PreviewImageAfterSaving){
+		$ret = $true
+	}
+	
+	return $ret
+}
+function Setting_SetOption_DisplaySavedPicture([boolean]$disp){
+	if( $disp ){
+		$script:Settings.PreviewImageAfterSaving = "Yes"
+	}
+	else {
+		$script:Settings.PreviewImageAfterSaving = "No"
+	}
+}
+
